@@ -3,15 +3,15 @@ import useGeolocation from "../hooks/useGeolocation";
 import { getAddress } from "../api/location";
 
 export default function LocationCard() {
-    const { location, error, getLocation } = useGeolocation();
+    const { location, error, loading: geoLoading, getLocation } = useGeolocation();
     const [address, setAddress] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [addressLoading, setAddressLoading] = useState(false);
 
     const fetchAddress = async () => {
-        setLoading(true);
+        setAddressLoading(true);
         const data = await getAddress(location.lat, location.lon);
         setAddress(data);
-        setLoading(false);
+        setAddressLoading(false);
     };
 
     return (
@@ -22,9 +22,13 @@ export default function LocationCard() {
 
             <button
                 onClick={getLocation}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold hover:scale-[1.02] transition-all shadow-lg"
+                disabled={geoLoading}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold hover:scale-[1.02] transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-                Detect My Location
+                {geoLoading && (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                )}
+                {geoLoading ? "Detecting..." : "Detect My Location"}
             </button>
 
             {error && (
@@ -56,13 +60,13 @@ export default function LocationCard() {
             )}
 
             {/* Loader */}
-            {loading && (
+            {addressLoading && (
                 <div className="flex justify-center mt-6">
                     <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
                 </div>
             )}
 
-            {address && !loading && (
+            {address && !addressLoading && (
                 <div className="mt-6 bg-white/10 p-4 rounded-xl text-white text-sm space-y-1">
                     <p className="font-semibold">📌 {address.display_name}</p>
                     <p>🏙 {address.address.city || address.address.town}</p>
